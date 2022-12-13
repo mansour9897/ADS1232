@@ -14,6 +14,11 @@
 #define ADS_SPEED_10SPS CLRBIT(PORTB.OUT,1);
 #define ADS_SPEED_80SPS SETBIT(PORTB.OUT,1);
 
+#define ADS_CH1 1
+#define ADS_CH2 2
+
 void ads1232_init(void);
 unsigned long int ads1232_read_raw(int ch);
 float ads1232_read_mv(int ch);
+
+#endif

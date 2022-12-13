@@ -1,5 +1,9 @@
 #include <ADS1232.h>
 #include <io.h>
+#include <delay.h>
+
+float gain;
+
 void ads1232_init(void)
 {
     // io pin configuration
@@ -7,20 +11,21 @@ void ads1232_init(void)
     PORTD.DIR |= 0X02;
 
     ADS_GAIN_128;
+    gain = 128;
     ADS_SPEED_10SPS;
 }
 
-void ads1232_read_raw(int ch)
+unsigned long int ads1232_read_raw(int ch)
 {
     unsigned long int raw;
     int i, j;
     // Select channel
-    if (ch == 1)
+    if (ch == ADS_CH1)
     {
         ADS_SEL_CH1;
         delay_us(50);
     }
-    if (ch == 2)
+    if (ch == ADS_CH2)
     {
         ADS_SEL_CH2;
         delay_us(50);
