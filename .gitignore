@@ -1,0 +1,15 @@
+./.vscode
+**/.vscode
+**/Debug
+**/Release
+**/**/Debug
+**/**/Release
+*.c~
+*.h~
+*.hci
+*.cci
+*.docx
+*.cbi
+*.cof
+*.fct
+*.prj~
