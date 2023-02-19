@@ -12,7 +12,7 @@ void ads1232_init(void)
 
     ADS_GAIN_128;
     gain = 128;
-    ADS_SPEED_10SPS;
+    ADS_SPEED_80SPS;
 }
 
 unsigned long int ads1232_read_raw(int ch)
