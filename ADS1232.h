@@ -20,5 +20,5 @@
 void ads1232_init(void);
 unsigned long int ads1232_read_raw(int ch);
 float ads1232_read_mv(int ch);
-
+void ads1232_power_reset(void);
 #endif

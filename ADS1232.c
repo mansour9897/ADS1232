@@ -1,18 +1,32 @@
 #include <ADS1232.h>
 #include <io.h>
 #include <delay.h>
+#include "debug.h"
 
 float gain;
 
 void ads1232_init(void)
 {
+    debug_print("ads1232_initialize...\r\n");
     // io pin configuration
     PORTB.DIR |= 0x0F;
     PORTD.DIR |= 0X02;
 
+    //PWDN configuration
+    PORTA.DIR |= 0x20;
+
     ADS_GAIN_128;
     gain = 128;
     ADS_SPEED_80SPS;
+
+    ads1232_power_reset();
+}
+
+void ads1232_power_reset(void){
+    debug_print("ads1232_power_reset...\r\n");
+    CLRBIT(PORTA.OUT,5);
+    delay_ms(1500); 
+    SETBIT(PORTA.OUT,5);
 }
 
 unsigned long int ads1232_read_raw(int ch)
