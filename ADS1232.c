@@ -33,51 +33,41 @@ void ads1232_power_reset(void)
 int32_t ads1232_read_raw(int ch)
 {
     int32_t raw;
-    int i, j;
+    uint32_t reg=0;
+    reg = ads1232_read_converted_register(ch);
 
-    if (raw & 0x800000)
+    if (reg & 0x800000)
     {
 
-        raw = ~raw;
-        raw = raw & 0x007FFFFF;
+        reg = ~raw;
+        raw = reg & 0x007FFFFF;
         raw *= -1;
-        // volt = (float)(raw) * (-0.000298);
     }
     return raw;
 }
 
 uint32_t ads1232_read_converted_register(int ch)
 {
-    uint32_t ch_raw;
+    uint32_t ch_raw = 0;
+    int i, j;
     ads1232_select_channel(ch);
-
-    // start reading data
-    ADS_SCK_Low;
-    raw = 0;
-    j = ADS_Dout_Read;
-
-    // wait untile data ready
-    while (j)
-    {
-        j = ADS_Dout_Read;
-    }
+    ads1232_wait_for_data();
 
     i = j = 0;
     for (i = 0; i < 24; i++)
     {
-        ADS_SCK_High;
-        delay_us(1);
-        raw = raw << 1;
-        ADS_SCK_Low;
-        delay_us(1);
+        ch_raw = ch_raw << 1;
+        ads1232_one_clock();
         j = ADS_Dout_Read;
         if (j)
-            raw++;
+            ch_raw++;
     }
-    ADS_SCK_High;
-    delay_us(1);
-    ADS_SCK_Low;
+
+    ads1232_one_clock();
+
+    return ch_raw;
 }
+
 void ads1232_select_channel(int ch)
 {
     if (ch == ADS_CH1)
@@ -90,6 +80,27 @@ void ads1232_select_channel(int ch)
         ADS_SEL_CH2;
         delay_us(50);
     }
+}
+
+void ads1232_wait_for_data()
+{
+    int j = 0;
+    ADS_SCK_Low;
+    j = ADS_Dout_Read;
+
+    // wait untile data ready
+    while (j)
+    {
+        j = ADS_Dout_Read;
+    }
+}
+
+void ads1232_one_clock(void)
+{
+    ADS_SCK_High;
+    delay_us(1);
+    ADS_SCK_Low;
+    delay_us(1);
 }
 
 float ads1232_read_mv(int ch)

@@ -25,4 +25,5 @@ void ads1232_power_reset(void);
 void ads1232_select_channel(int ch);
 uint32_t ads1232_read_converted_register(int ch);
 void ads1232_wait_for_data();
+void ads1232_one_clock(void);
 #endif
