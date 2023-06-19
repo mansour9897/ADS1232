@@ -33,16 +33,21 @@ void ads1232_power_reset(void)
 int32_t ads1232_read_raw(int ch)
 {
     int32_t raw;
-    uint32_t reg=0;
+    uint32_t reg = 0;
     reg = ads1232_read_converted_register(ch);
 
     if (reg & 0x800000)
     {
 
-        reg = ~raw;
+        reg = ~reg;
         raw = reg & 0x007FFFFF;
         raw *= -1;
     }
+    else
+    {
+        raw = reg;
+    }
+    
     return raw;
 }
 
