@@ -12,7 +12,7 @@ void ads1232_init(void)
     PORTB.DIR |= 0x0F;
     PORTD.DIR |= 0X02;
 
-    //PWDN configuration
+    // PWDN configuration
     PORTA.DIR |= 0x20;
 
     ADS_GAIN_128;
@@ -22,28 +22,21 @@ void ads1232_init(void)
     ads1232_power_reset();
 }
 
-void ads1232_power_reset(void){
+void ads1232_power_reset(void)
+{
     debug_print("ads1232_power_reset...\r\n");
-    CLRBIT(PORTA.OUT,5);
-    delay_ms(1500); 
-    SETBIT(PORTA.OUT,5);
+    CLRBIT(PORTA.OUT, 5);
+    delay_ms(1500);
+    SETBIT(PORTA.OUT, 5);
 }
 
 unsigned long int ads1232_read_raw(int ch)
 {
     unsigned long int raw;
     int i, j;
-    // Select channel
-    if (ch == ADS_CH1)
-    {
-        ADS_SEL_CH1;
-        delay_us(50);
-    }
-    if (ch == ADS_CH2)
-    {
-        ADS_SEL_CH2;
-        delay_us(50);
-    }
+    
+    ads1232_select_channel(ch);
+    
 
     // start reading data
     ADS_SCK_Low;
@@ -87,10 +80,24 @@ unsigned long int ads1232_read_raw(int ch)
     return raw;
 }
 
+void ads1232_select_channel(int ch)
+{
+    if (ch == ADS_CH1)
+    {
+        ADS_SEL_CH1;
+        delay_us(50);
+    }
+    if (ch == ADS_CH2)
+    {
+        ADS_SEL_CH2;
+        delay_us(50);
+    }
+}
+
 float ads1232_read_mv(int ch)
 {
     float mv = 0;
     mv = 0.000298 * ads1232_read_raw(ch);
-    mv = (float)(mv/(float)(gain));
+    mv = (float)(mv / (float)(gain));
     return mv;
 }
