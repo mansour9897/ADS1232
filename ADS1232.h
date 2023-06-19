@@ -1,6 +1,7 @@
 #ifndef _ads1232_included_
 
 #include <iobits.h>
+#include <stdint.h>
 
 #define ADS_SCK_Low     CLRBIT(PORTD.OUT,1);
 #define ADS_SCK_High    SETBIT(PORTD.OUT,1);
@@ -18,8 +19,10 @@
 #define ADS_CH2 2
 
 void ads1232_init(void);
-unsigned long int ads1232_read_raw(int ch);
+int32_t ads1232_read_raw(int ch);
 float ads1232_read_mv(int ch);
 void ads1232_power_reset(void);
 void ads1232_select_channel(int ch);
+uint32_t ads1232_read_converted_register(int ch);
+void ads1232_wait_for_data();
 #endif

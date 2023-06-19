@@ -30,13 +30,26 @@ void ads1232_power_reset(void)
     SETBIT(PORTA.OUT, 5);
 }
 
-unsigned long int ads1232_read_raw(int ch)
+int32_t ads1232_read_raw(int ch)
 {
-    unsigned long int raw;
+    int32_t raw;
     int i, j;
-    
+
+    if (raw & 0x800000)
+    {
+
+        raw = ~raw;
+        raw = raw & 0x007FFFFF;
+        raw *= -1;
+        // volt = (float)(raw) * (-0.000298);
+    }
+    return raw;
+}
+
+uint32_t ads1232_read_converted_register(int ch)
+{
+    uint32_t ch_raw;
     ads1232_select_channel(ch);
-    
 
     // start reading data
     ADS_SCK_Low;
@@ -64,22 +77,7 @@ unsigned long int ads1232_read_raw(int ch)
     ADS_SCK_High;
     delay_us(1);
     ADS_SCK_Low;
-    if (raw & 0x800000)
-    {
-
-        raw = ~raw;
-        raw = raw & 0x007FFFFF;
-        raw *= -1;
-        // volt = (float)(raw) * (-0.000298);
-    }
-    // else
-    // {
-    //     volt = (float)(raw) * (0.000298);
-    // }
-    // volt = (float)(volt / (float)(Gain));
-    return raw;
 }
-
 void ads1232_select_channel(int ch)
 {
     if (ch == ADS_CH1)
