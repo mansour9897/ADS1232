@@ -12,7 +12,7 @@ void ads1232_init(void)
     PORTB.DIR |= 0x0F;
     PORTD.DIR |= 0X02;
 
-    //PWDN configuration
+    // PWDN configuration
     PORTA.DIR |= 0x20;
 
     ADS_GAIN_128;
@@ -22,18 +22,59 @@ void ads1232_init(void)
     ads1232_power_reset();
 }
 
-void ads1232_power_reset(void){
+void ads1232_power_reset(void)
+{
     debug_print("ads1232_power_reset...\r\n");
-    CLRBIT(PORTA.OUT,5);
-    delay_ms(1500); 
-    SETBIT(PORTA.OUT,5);
+    CLRBIT(PORTA.OUT, 5);
+    delay_ms(1500);
+    SETBIT(PORTA.OUT, 5);
 }
 
-unsigned long int ads1232_read_raw(int ch)
+int32_t ads1232_read_raw(int ch)
 {
-    unsigned long int raw;
+    int32_t raw;
+    uint32_t reg = 0;
+    reg = ads1232_read_converted_register(ch);
+
+    if (reg & 0x800000)
+    {
+
+        reg = ~reg;
+        raw = reg & 0x007FFFFF;
+        raw *= -1;
+    }
+    else
+    {
+        raw = reg;
+    }
+    
+    return raw;
+}
+
+uint32_t ads1232_read_converted_register(int ch)
+{
+    uint32_t ch_raw = 0;
     int i, j;
-    // Select channel
+    ads1232_select_channel(ch);
+    ads1232_wait_for_data();
+
+    i = j = 0;
+    for (i = 0; i < 24; i++)
+    {
+        ch_raw = ch_raw << 1;
+        ads1232_one_clock();
+        j = ADS_Dout_Read;
+        if (j)
+            ch_raw++;
+    }
+
+    ads1232_one_clock();
+
+    return ch_raw;
+}
+
+void ads1232_select_channel(int ch)
+{
     if (ch == ADS_CH1)
     {
         ADS_SEL_CH1;
@@ -44,10 +85,12 @@ unsigned long int ads1232_read_raw(int ch)
         ADS_SEL_CH2;
         delay_us(50);
     }
+}
 
-    // start reading data
+void ads1232_wait_for_data()
+{
+    int j = 0;
     ADS_SCK_Low;
-    raw = 0;
     j = ADS_Dout_Read;
 
     // wait untile data ready
@@ -55,42 +98,20 @@ unsigned long int ads1232_read_raw(int ch)
     {
         j = ADS_Dout_Read;
     }
+}
 
-    i = j = 0;
-    for (i = 0; i < 24; i++)
-    {
-        ADS_SCK_High;
-        delay_us(1);
-        raw = raw << 1;
-        ADS_SCK_Low;
-        delay_us(1);
-        j = ADS_Dout_Read;
-        if (j)
-            raw++;
-    }
+void ads1232_one_clock(void)
+{
     ADS_SCK_High;
     delay_us(1);
     ADS_SCK_Low;
-    if (raw & 0x800000)
-    {
-
-        raw = ~raw;
-        raw = raw & 0x007FFFFF;
-        raw *= -1;
-        // volt = (float)(raw) * (-0.000298);
-    }
-    // else
-    // {
-    //     volt = (float)(raw) * (0.000298);
-    // }
-    // volt = (float)(volt / (float)(Gain));
-    return raw;
+    delay_us(1);
 }
 
 float ads1232_read_mv(int ch)
 {
     float mv = 0;
     mv = 0.000298 * ads1232_read_raw(ch);
-    mv = (float)(mv/(float)(gain));
+    mv = (float)(mv / (float)(gain));
     return mv;
 }
