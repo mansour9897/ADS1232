@@ -44,6 +44,11 @@ int32_t ads1232_read_raw(int ch)
         raw = reg & 0x007FFFFF;
         raw *= -1;
     }
+    else
+    {
+        raw = reg;
+    }
+    
     return raw;
 }
 
