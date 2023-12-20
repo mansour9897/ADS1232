@@ -20,25 +20,26 @@ void ads1232_init(void)
     ADS_SPEED_80SPS;
 
     ads1232_power_reset();
+    ADS_SCK_High;
 }
 
 void ads1232_power_reset(void)
 {
-    debug_print("ads1232_power_reset...\r\n");
-    CLRBIT(PORTA.OUT, 5);
-    delay_ms(1500);
+    unsigned int i = 0;
     SETBIT(PORTA.OUT, 5);
 }
 
 int32_t ads1232_read_raw(int ch)
 {
-    int32_t raw;
-    uint32_t reg=0;
+    int32_t raw = 0;
+    uint32_t reg = 0;
+    uint32_t flg=0;
     reg = ads1232_read_converted_register(ch);
-
-    if (reg & 0x800000)
+    debug_print("REG CH%u: %lX\r\n", ch, reg);
+    raw = reg;
+    flg=reg & 0x800000;
+    if (flg)
     {
-
         reg = ~raw;
         raw = reg & 0x007FFFFF;
         raw *= -1;
@@ -62,9 +63,6 @@ uint32_t ads1232_read_converted_register(int ch)
         if (j)
             ch_raw++;
     }
-
-    ads1232_one_clock();
-
     return ch_raw;
 }
 
@@ -89,7 +87,7 @@ void ads1232_wait_for_data()
     j = ADS_Dout_Read;
 
     // wait untile data ready
-    while (j)
+    while (j == 1)
     {
         j = ADS_Dout_Read;
     }
@@ -97,15 +95,16 @@ void ads1232_wait_for_data()
 
 void ads1232_one_clock(void)
 {
-    ADS_SCK_High;
-    delay_us(1);
     ADS_SCK_Low;
-    delay_us(1);
+    delay_us(10);
+    ADS_SCK_High;
+    delay_us(10);
 }
 
 float ads1232_read_mv(int ch)
 {
     float mv = 0;
+    delay_ms(1);
     mv = 0.000298 * ads1232_read_raw(ch);
     mv = (float)(mv / (float)(gain));
     return mv;
